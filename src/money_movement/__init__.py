@@ -1,0 +1,1 @@
+"""Money movement ledger service."""
