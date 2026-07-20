@@ -147,18 +147,20 @@ class SqlAlchemyUnitOfWork:
         for row, snapshot in self._account_rows.values():
             row.balance = snapshot.balance
 
-        self.session.add(
-            TransferRow(
-                transfer_id=transfer.transfer_id,
-                source_account_id=transfer.source_account_id,
-                destination_account_id=transfer.destination_account_id,
-                amount=transfer.money.amount,
-                currency=transfer.money.currency,
-                reference=transfer.reference,
-                status=str(transfer.status),
-                created_at=transfer.created_at,
-            )
+        transfer_row = TransferRow(
+            transfer_id=transfer.transfer_id,
+            source_account_id=transfer.source_account_id,
+            destination_account_id=transfer.destination_account_id,
+            amount=transfer.money.amount,
+            currency=transfer.money.currency,
+            reference=transfer.reference,
+            status=str(transfer.status),
+            created_at=transfer.created_at,
         )
+        self.session.add(transfer_row)
+        # The models intentionally avoid ORM relationships. Flush the parent explicitly so
+        # PostgreSQL sees it before rows with transfer_id foreign keys are inserted.
+        await self.session.flush([transfer_row])
         self.session.add_all(
             [
                 LedgerEntryRow(
