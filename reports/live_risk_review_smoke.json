@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-07-21T10:14:22.865687+00:00",
+  "provider": "http://localhost:11434/v1",
+  "model": "qwen2.5:7b-instruct",
+  "synthetic_cases": 3,
+  "safe_completions": 3,
+  "quality_gate_passed": true,
+  "outcomes": [
+    {
+      "case_id": "live-standard-1",
+      "minimum_queue": "STANDARD_OPERATIONS",
+      "actual_queue": "STANDARD_OPERATIONS",
+      "steps": 3,
+      "evidence_ids": [
+        "manual-review:standard-operations-queue",
+        "manual-review:human-decision-boundary",
+        "manual-review:transaction-velocity"
+      ],
+      "reason_codes": ["NO_CONFIGURED_ESCALATION_SIGNAL"],
+      "safe_completion": true
+    },
+    {
+      "case_id": "live-velocity-1",
+      "minimum_queue": "PRIORITY_MANUAL_REVIEW",
+      "actual_queue": "PRIORITY_MANUAL_REVIEW",
+      "steps": 3,
+      "evidence_ids": ["manual-review:transaction-velocity"],
+      "reason_codes": ["HIGH_VELOCITY"],
+      "safe_completion": true
+    },
+    {
+      "case_id": "live-screening-1",
+      "minimum_queue": "COMPLIANCE_MANUAL_REVIEW",
+      "actual_queue": "COMPLIANCE_MANUAL_REVIEW",
+      "steps": 3,
+      "evidence_ids": ["identity-and-screening:screening-alerts"],
+      "reason_codes": ["SCREENING_ALERT"],
+      "safe_completion": true
+    }
+  ],
+  "boundary": "Synthetic smoke test only; no real customer data or production decision claim."
+}
