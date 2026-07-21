@@ -5,6 +5,10 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/money_movement
       REDIS_URL: redis://redis:6379/0
       API_KEY: ${API_KEY:-local-development-key}
+      RISK_REVIEW_MODE: ${RISK_REVIEW_MODE:-policy_baseline}
+      AI_BASE_URL: ${AI_BASE_URL:-http://host.docker.internal:11434/v1}
+      AI_MODEL: ${AI_MODEL:-qwen2.5:7b-instruct}
+      AI_API_KEY: ${AI_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:

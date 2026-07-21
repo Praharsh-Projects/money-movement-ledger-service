@@ -32,6 +32,9 @@ from money_movement.application.service import (
 from money_movement.domain.model import DomainValidationError
 from money_movement.infrastructure.config import Settings, get_settings
 from money_movement.infrastructure.database import Database
+from money_movement.risk_review.factory import build_risk_review_workflow
+from money_movement.risk_review.models import ReviewCase, ReviewResult
+from money_movement.risk_review.workflow import RiskReviewWorkflow
 
 
 def create_app(
@@ -39,12 +42,14 @@ def create_app(
     *,
     database: Database | None = None,
     redis: Redis | None = None,
+    risk_reviewer: RiskReviewWorkflow | None = None,
     initialize_schema: bool = True,
 ) -> FastAPI:
     active_settings = settings or get_settings()
     active_database = database or Database(active_settings.database_url)
     active_redis = redis or Redis.from_url(active_settings.redis_url, decode_responses=True)
     service = MoneyMovementService(active_database.unit_of_work)
+    active_risk_reviewer = risk_reviewer or build_risk_review_workflow(active_settings)
     verify_api_key = ApiKeyVerifier(active_settings.api_key)
 
     @asynccontextmanager
@@ -56,14 +61,15 @@ def create_app(
         await active_database.dispose()
 
     app = FastAPI(
-        title="Money Movement Ledger Service",
-        version="1.0.0",
-        description="Secure, idempotent transfer API backed by a double-entry ledger and outbox events.",
+        title="Money Movement Ledger and Risk Review Service",
+        version="1.1.0",
+        description=("Secure, idempotent transfers plus bounded, policy-grounded human-review routing."),
         lifespan=lifespan,
     )
     app.state.database = active_database
     app.state.redis = active_redis
     app.state.service = service
+    app.state.risk_reviewer = active_risk_reviewer
     app.state.settings = active_settings
 
     @app.middleware("http")
@@ -159,6 +165,15 @@ def create_app(
     async def list_ledger(account_id: str) -> list[LedgerEntryResponse]:
         entries = await service.list_ledger_entries(account_id)
         return [LedgerEntryResponse.from_entry(entry) for entry in entries]
+
+    @app.post(
+        "/v1/risk-reviews",
+        response_model=ReviewResult,
+        dependencies=secured,
+        summary="Create a human-review routing recommendation",
+    )
+    async def create_risk_review(payload: ReviewCase) -> ReviewResult:
+        return await active_risk_reviewer.review(payload)
 
     return app
 

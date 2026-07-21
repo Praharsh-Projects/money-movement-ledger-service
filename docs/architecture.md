@@ -33,9 +33,21 @@ Domain model             PostgreSQL adapter
 The outbox boundary prevents a database commit from being lost when the event broker is unavailable.
 Delivery is at least once: downstream consumers must deduplicate on `event_id`.
 
+## Risk-review boundary
+
+```text
+ReviewCase -> redacted case-facts tool -> policy retrieval -> model/baseline
+     -> strict result validation -> deterministic queue guardrails -> human review
+```
+
+The risk-review route is isolated from the transfer-posting transaction. It cannot call transfer commands,
+mutate accounts, write ledger entries, or dispatch events. See
+[risk-review design](risk-review-agent.md) for the model, retrieval, and data boundaries.
+
 ## Domain boundaries
 
 - **Domain:** money normalization, transfer invariants, balanced ledger entries, domain-event creation.
 - **Application:** use-case orchestration and infrastructure ports.
 - **Infrastructure:** SQLAlchemy/PostgreSQL unit of work and Redis Streams dispatcher.
+- **Risk review:** read-only tools, policy retrieval, model gateway, output validation, and queue guardrails.
 - **API:** authentication, validation, HTTP error mapping, and correlation IDs.

@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-07-21T10:14:10.609346Z",
+  "suite": "deterministic financial risk review regression",
+  "dataset": "evals/risk_review_cases.json",
+  "total_cases": 20,
+  "queue_distribution": {
+    "COMPLIANCE_MANUAL_REVIEW": 5,
+    "PRIORITY_MANUAL_REVIEW": 10,
+    "STANDARD_OPERATIONS": 5
+  },
+  "routing_accuracy": 1.0,
+  "policy_citation_rate": 1.0,
+  "human_review_gate_rate": 1.0,
+  "bounded_completion_rate": 1.0,
+  "direct_identifier_leak_rate": 0.0,
+  "fail_closed_rate": 0.0,
+  "quality_gate_passed": true,
+  "command": "uv run python scripts/run_risk_review_evals.py",
+  "boundary": "Synthetic deterministic regression only; not a production risk-decision benchmark."
+}
